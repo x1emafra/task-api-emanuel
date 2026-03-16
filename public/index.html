@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Tasks CRUD</title>
+  <style>
+    li { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+    .completed { text-decoration: line-through; opacity: 0.6; }
+    button { margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🚀 API Tasks CRUD Completa</h1>
+  <input id="task-input" placeholder="Nueva tarea o editar...">
+  <button onclick="addTask()">Agregar</button>
+  <button onclick="loadTasks()">🔄 Recargar</button>
+  <ul id="tasks"></ul>
+
+  <script>
+    let editingId = null;
+
+    async function loadTasks() {
+      try {
+        const res = await fetch('/api/tasks');
+        const tasks = await res.json();
+        const ul = document.getElementById('tasks');
+        ul.innerHTML = tasks.map(task => `
+          <li>
+            <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                   onchange="toggleTask(${task.id})">
+            <span class="${task.completed ? 'completed' : ''}">
+              ${task.title}
+            </span>
+            <button onclick="editTask(${task.id}, '${task.title.replace(/'/g, "\\'")}')">✏️ Editar</button>
+            <button onclick="deleteTask(${task.id})">🗑️ Eliminar</button>
+          </li>
+        `).join('');
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function addTask() {
+      const input = document.getElementById('task-input');
+      const title = input.value.trim();
+      
+      if (!title) return;
+
+      try {
+        if (editingId) {
+          // UPDATE
+          await fetch(`/api/tasks/${editingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title })
+          });
+          editingId = null;
+        } else {
+          // CREATE
+          await fetch('/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title })
+          });
+        }
+        input.value = '';
+        loadTasks();
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function toggleTask(id) {
+      await fetch(`/api/tasks/${id}/toggle`, { method: 'PUT' });
+      loadTasks();
+    }
+
+    function editTask(id, title) {
+      const input = document.getElementById('task-input');
+      input.value = title;
+      input.focus();
+      editingId = id;
+    }
+
+    async function deleteTask(id) {
+      if (confirm('¿Eliminar tarea?')) {
+        await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+        loadTasks();
+      }
+    }
+
+    // Cargar al inicio
+    loadTasks();
+  </script>
+</body>
+</html>
