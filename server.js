@@ -1,27 +1,35 @@
-require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const taskRoutes = require('./src/routes/taskRoutes');
+const { PrismaClient } = require('@prisma/client');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const prisma = new PrismaClient();
 
-app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
-app.use('/api/tasks', taskRoutes);
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server: http://localhost:${PORT}`);
+// GET todas tasks
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const tasks = await prisma.task.findMany();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM recibido');
-  server.close(() => process.exit(0));
+// POST nueva task
+app.post('/api/tasks', async (req, res) => {
+  try {
+    const { title, description, completed } = req.body;
+    const task = await prisma.task.create({
+      data: { title, description, completed: completed || false }
+    });
+    res.json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-module.exports = app;
-
-
-
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
