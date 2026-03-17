@@ -4,12 +4,14 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // url... (comentado)
 }
 
 model Task {
-  id        Int      @id @default(autoincrement())
-  title     String   @db.VarChar(255)
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now()) @db.Timestamp(6)
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
