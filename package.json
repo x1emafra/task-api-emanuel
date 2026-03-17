@@ -1,3 +1,11 @@
+
+{
+  "engines": {
+    "node": "20"
+  },
+  "name": "task-api-emanuel",
+  ...
+}
 {
   "name": "task-api-emanuel",
   "version": "1.0.0",
