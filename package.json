@@ -1,24 +1,10 @@
 {
   "name": "task-api-emanuel",
   "version": "1.0.0",
-  "description": "Full-stack Task API",
+  "description": "Full-stack Task API Railway",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-  "engines": {
-    "node": "24.14.0"
-  },
-  "dependencies": {
-    "express": "^4.21.1",
-    "cors": "^2.8.5",
-    "dotenv": "^17.3.1",
-    "@prisma/client": "^7.5.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14",
-    "prisma": "^7.5.0"
-  }
-}
-
+  "engines
