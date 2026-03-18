@@ -1,0 +1,17 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npx prisma generate && npm ci"
+  },
+  "deploy": {
+    "nixpacksPlan": {
+      "providers": [
+        {
+          "type": "nodejs",
+          "version": "20"
+        }
+      ]
+    }
+  }
+}

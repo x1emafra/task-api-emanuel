@@ -45,7 +45,7 @@ app.post('/api/tasks', async (req, res) => {
 
 // Root test
 app.get('/', (req, res) => {
-  res.json({ message: '🚀 Task API Live!' });
+  res.json({ message: '🚀 Task API Emanuel Franco Live!' });
 });
 
 const PORT = process.env.PORT || 3000;
