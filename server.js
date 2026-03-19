@@ -6,7 +6,10 @@ const prisma = new PrismaClient();
 
 app.use(express.json());
 
-// GET todas tasks
+app.get('/', (req, res) => {
+  res.json({ message: '🚀 Task API Emanuel Live!' });
+});
+
 app.get('/api/tasks', async (req, res) => {
   try {
     const tasks = await prisma.task.findMany();
@@ -16,21 +19,6 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
-// GET task por ID
-app.get('/api/tasks/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const task = await prisma.task.findUnique({
-      where: { id: parseInt(id) }
-    });
-    if (!task) return res.status(404).json({ error: 'Task not found' });
-    res.json(task);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// POST nueva task
 app.post('/api/tasks', async (req, res) => {
   try {
     const { title, description, completed } = req.body;
@@ -43,14 +31,7 @@ app.post('/api/tasks', async (req, res) => {
   }
 });
 
-// Root test
-app.get('/', (req, res) => {
-  res.json({ message: '🚀 Task API Emanuel Franco Live!' });
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {  // + '0.0.0.0'
-  console.log(`Server running on port ${PORT}`);
-});
-
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server: http://0.0.0.0:${PORT}`);
 });
