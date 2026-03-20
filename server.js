@@ -33,5 +33,6 @@ app.post('/api/tasks', async (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
+  console.log('DEPLOY SYNC OK');
   console.log('Server live on port ' + PORT);
 });
