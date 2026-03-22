@@ -5,8 +5,9 @@
     "start": "npx prisma generate && node server.js"
   },
   "dependencies": {
+    "@prisma/client": "^5.14.0",
+    "cors": "^2.8.6",
     "express": "^4.19.2",
-    "prisma": "^5.14.0",
-    "@prisma/client": "^5.14.0"
+    "prisma": "^5.14.0"
   }
 }
