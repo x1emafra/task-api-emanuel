@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"           // ← LOCAL
-  url      = "file:./dev.db"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model Task {
@@ -12,5 +12,6 @@ model Task {
   title       String
   description String?
   completed   Boolean  @default(false)
+  userId      String
   createdAt   DateTime @default(now())
 }
