@@ -3,15 +3,28 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  // url... (comentado)
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id    String @id
+  email String
+  role  String @default("user")
+
+  tasks       Task[] @relation("OwnerTasks")
+  sharedTasks Task[] @relation("SharedTasks")
 }
 
 model Task {
   id          Int      @id @default(autoincrement())
   title       String
-  description String?
   completed   Boolean  @default(false)
+  order       Int
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  ownerId String
+  owner   User @relation("OwnerTasks", fields: [ownerId], references: [id])
+
+  sharedWith User[] @relation("SharedTasks")
 }
