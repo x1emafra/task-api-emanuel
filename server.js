@@ -6,8 +6,18 @@ const { PrismaClient } = pkg;
 const prisma = new PrismaClient();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://task-frontend-ten-sigma.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 
 // GET tareas (propias + compartidas)
 app.get("/api/tasks", async (req, res) => {
