@@ -7,20 +7,24 @@ const prisma = new PrismaClient();
 
 const app = express();
 
+// 🔹 Middleware base
 app.use(express.json());
+
+// 🔥 CORS (arreglado + completo)
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://task-frontend-ten-sigma.vercel.app",
+      "http://localhost:5175",
+      "http://10.151.128.39:5173",
+      "https://task-frontend-ten-sigma.vercel.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
 
-
-// GET tareas (propias + compartidas)
+// 🔹 GET tareas (propias + compartidas)
 app.get("/api/tasks", async (req, res) => {
   const { userId } = req.query;
 
@@ -41,12 +45,11 @@ app.get("/api/tasks", async (req, res) => {
   }
 });
 
-// CREATE tarea + auto crear usuario
+// 🔹 CREATE tarea
 app.post("/api/tasks", async (req, res) => {
   const { title, userId, email } = req.body;
 
   try {
-    // crear usuario si no existe
     await prisma.user.upsert({
       where: { id: userId },
       update: {},
@@ -74,7 +77,7 @@ app.post("/api/tasks", async (req, res) => {
   }
 });
 
-// UPDATE (toggle / reorder)
+// 🔹 UPDATE
 app.put("/api/tasks/:id", async (req, res) => {
   const { id } = req.params;
   const { completed, order } = req.body;
@@ -91,7 +94,7 @@ app.put("/api/tasks/:id", async (req, res) => {
   }
 });
 
-// DELETE (owner o admin)
+// 🔹 DELETE
 app.delete("/api/tasks/:id", async (req, res) => {
   const { id } = req.params;
   const { userId } = req.query;
@@ -119,7 +122,7 @@ app.delete("/api/tasks/:id", async (req, res) => {
   }
 });
 
-// SHARE tarea
+// 🔹 SHARE
 app.post("/api/tasks/share", async (req, res) => {
   const { taskId, email } = req.body;
 
@@ -147,6 +150,7 @@ app.post("/api/tasks/share", async (req, res) => {
   }
 });
 
+// 🔹 SERVER (NO CAMBIADO)
 app.listen(8080, () => {
   console.log("🚀 Server running on port 8080");
 });
