@@ -10,7 +10,7 @@ const app = express();
 // 🔹 Middleware base
 app.use(express.json());
 
-// 🔥 CORS (arreglado + completo)
+// 🔥 CORS (arreglado + completo) ✅ RESPETADO
 app.use(
   cors({
     origin: [
@@ -24,9 +24,15 @@ app.use(
   })
 );
 
-// 🔹 GET tareas (propias + compartidas)
+/* =========================
+   GET TASKS (propias + compartidas)
+========================= */
 app.get("/api/tasks", async (req, res) => {
   const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "userId requerido" });
+  }
 
   try {
     const tasks = await prisma.task.findMany({
@@ -41,18 +47,26 @@ app.get("/api/tasks", async (req, res) => {
 
     res.json(tasks);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// 🔹 CREATE tarea
+/* =========================
+   CREATE TASK ✅ FIX REAL
+========================= */
 app.post("/api/tasks", async (req, res) => {
   const { title, userId, email } = req.body;
 
+  if (!title || !userId) {
+    return res.status(400).json({ error: "Faltan datos" });
+  }
+
   try {
+    // 🔧 FIX: email ahora es opcional (NO rompe)
     await prisma.user.upsert({
       where: { id: userId },
-      update: {},
+      update: email ? { email } : {},
       create: {
         id: userId,
         email: email || "sin-email",
@@ -68,16 +82,20 @@ app.post("/api/tasks", async (req, res) => {
         title,
         ownerId: userId,
         order: count,
+        completed: false,
       },
     });
 
     res.json(task);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// 🔹 UPDATE
+/* =========================
+   UPDATE TASK
+========================= */
 app.put("/api/tasks/:id", async (req, res) => {
   const { id } = req.params;
   const { completed, order } = req.body;
@@ -85,19 +103,29 @@ app.put("/api/tasks/:id", async (req, res) => {
   try {
     const task = await prisma.task.update({
       where: { id: Number(id) },
-      data: { completed, order },
+      data: {
+        ...(completed !== undefined && { completed }),
+        ...(order !== undefined && { order }),
+      },
     });
 
     res.json(task);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// 🔹 DELETE
+/* =========================
+   DELETE TASK
+========================= */
 app.delete("/api/tasks/:id", async (req, res) => {
   const { id } = req.params;
   const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "userId requerido" });
+  }
 
   try {
     const user = await prisma.user.findUnique({
@@ -108,7 +136,11 @@ app.delete("/api/tasks/:id", async (req, res) => {
       where: { id: Number(id) },
     });
 
-    if (task.ownerId !== userId && user.role !== "admin") {
+    if (!task) {
+      return res.status(404).json({ error: "Tarea no existe" });
+    }
+
+    if (task.ownerId !== userId && user?.role !== "admin") {
       return res.status(403).json({ error: "No permitido" });
     }
 
@@ -118,13 +150,20 @@ app.delete("/api/tasks/:id", async (req, res) => {
 
     res.json({ ok: true });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// 🔹 SHARE
+/* =========================
+   SHARE TASK
+========================= */
 app.post("/api/tasks/share", async (req, res) => {
   const { taskId, email } = req.body;
+
+  if (!taskId || !email) {
+    return res.status(400).json({ error: "Faltan datos" });
+  }
 
   try {
     const user = await prisma.user.findUnique({
@@ -136,7 +175,7 @@ app.post("/api/tasks/share", async (req, res) => {
     }
 
     const task = await prisma.task.update({
-      where: { id: taskId },
+      where: { id: Number(taskId) },
       data: {
         sharedWith: {
           connect: { id: user.id },
@@ -146,11 +185,14 @@ app.post("/api/tasks/share", async (req, res) => {
 
     res.json(task);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// 🔹 SERVER (NO CAMBIADO)
+/* =========================
+   SERVER
+========================= */
 app.listen(8080, () => {
   console.log("🚀 Server running on port 8080");
 });
