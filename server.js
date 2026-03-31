@@ -10,14 +10,14 @@ const app = express();
 // 🔹 Middleware base
 app.use(express.json());
 
-// 🔥 CORS (arreglado + completo) ✅ RESPETADO
+// 🔥 CORS
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
       "http://localhost:5175",
       "http://10.151.128.39:5173",
-      "https://task-frontend-ten-sigma.vercel.app"
+      "https://task-frontend-ten-sigma.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
@@ -25,7 +25,7 @@ app.use(
 );
 
 /* =========================
-   GET TASKS (propias + compartidas)
+   GET TASKS
 ========================= */
 app.get("/api/tasks", async (req, res) => {
   const { userId } = req.query;
@@ -47,29 +47,36 @@ app.get("/api/tasks", async (req, res) => {
 
     res.json(tasks);
   } catch (error) {
-    console.error(error);
+    console.error("💥 GET TASKS ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
 /* =========================
-   CREATE TASK ✅ FIX REAL
+   CREATE TASK (FIX + DEBUG)
 ========================= */
 app.post("/api/tasks", async (req, res) => {
+  console.log("📥 BODY:", req.body);
+
   const { title, userId, email } = req.body;
 
   if (!title || !userId) {
-    return res.status(400).json({ error: "Faltan datos" });
+    console.log("❌ Faltan datos:", { title, userId });
+
+    return res.status(400).json({
+      error: "Faltan datos",
+      received: req.body, // 🔥 BONUS
+    });
   }
 
   try {
-    // 🔧 FIX: email ahora es opcional (NO rompe)
+    // Crear o actualizar usuario
     await prisma.user.upsert({
       where: { id: userId },
       update: email ? { email } : {},
       create: {
         id: userId,
-        email: email || "sin-email",
+        email: email || `${userId}@no-email.com`, // 🔥 evita duplicados
       },
     });
 
@@ -86,9 +93,11 @@ app.post("/api/tasks", async (req, res) => {
       },
     });
 
+    console.log("✅ TASK CREATED:", task);
+
     res.json(task);
   } catch (error) {
-    console.error(error);
+    console.error("💥 CREATE TASK ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -111,7 +120,7 @@ app.put("/api/tasks/:id", async (req, res) => {
 
     res.json(task);
   } catch (error) {
-    console.error(error);
+    console.error("💥 UPDATE ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -150,7 +159,7 @@ app.delete("/api/tasks/:id", async (req, res) => {
 
     res.json({ ok: true });
   } catch (error) {
-    console.error(error);
+    console.error("💥 DELETE ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -185,7 +194,7 @@ app.post("/api/tasks/share", async (req, res) => {
 
     res.json(task);
   } catch (error) {
-    console.error(error);
+    console.error("💥 SHARE ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
