@@ -4,6 +4,9 @@
   "description": "Backend API for Task App (Express + Prisma)",
   "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",

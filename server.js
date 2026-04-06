@@ -28,9 +28,12 @@ app.use(
    GET TASKS
 ========================= */
 app.get("/api/tasks", async (req, res) => {
+  console.log("📥 GET /tasks query:", req.query);
+
   const { userId } = req.query;
 
   if (!userId) {
+    console.log("❌ userId faltante en GET");
     return res.status(400).json({ error: "userId requerido" });
   }
 
@@ -45,6 +48,8 @@ app.get("/api/tasks", async (req, res) => {
       orderBy: { order: "asc" },
     });
 
+    console.log("📤 GET RESPONSE:", tasks);
+
     res.json(tasks);
   } catch (error) {
     console.error("💥 GET TASKS ERROR:", error);
@@ -53,30 +58,30 @@ app.get("/api/tasks", async (req, res) => {
 });
 
 /* =========================
-   CREATE TASK (FIX + DEBUG)
+   CREATE TASK
 ========================= */
 app.post("/api/tasks", async (req, res) => {
-  console.log("📥 BODY:", req.body);
+  console.log("📥 POST /tasks BODY:", req.body);
 
   const { title, userId, email } = req.body;
 
   if (!title || !userId) {
-    console.log("❌ Faltan datos:", { title, userId });
+    console.log("❌ Faltan datos en POST:", { title, userId });
 
     return res.status(400).json({
       error: "Faltan datos",
-      received: req.body, // 🔥 BONUS
+      received: req.body,
     });
   }
 
   try {
-    // Crear o actualizar usuario
+    // 👤 Usuario
     await prisma.user.upsert({
       where: { id: userId },
       update: email ? { email } : {},
       create: {
         id: userId,
-        email: email || `${userId}@no-email.com`, // 🔥 evita duplicados
+        email: email || `${userId}@no-email.com`,
       },
     });
 
@@ -93,7 +98,7 @@ app.post("/api/tasks", async (req, res) => {
       },
     });
 
-    console.log("✅ TASK CREATED:", task);
+    console.log("📤 CREATED TASK:", task);
 
     res.json(task);
   } catch (error) {
@@ -106,6 +111,11 @@ app.post("/api/tasks", async (req, res) => {
    UPDATE TASK
 ========================= */
 app.put("/api/tasks/:id", async (req, res) => {
+  console.log("📥 PUT /tasks:", {
+    id: req.params.id,
+    body: req.body,
+  });
+
   const { id } = req.params;
   const { completed, order } = req.body;
 
@@ -118,6 +128,8 @@ app.put("/api/tasks/:id", async (req, res) => {
       },
     });
 
+    console.log("📤 UPDATED TASK:", task);
+
     res.json(task);
   } catch (error) {
     console.error("💥 UPDATE ERROR:", error);
@@ -129,10 +141,16 @@ app.put("/api/tasks/:id", async (req, res) => {
    DELETE TASK
 ========================= */
 app.delete("/api/tasks/:id", async (req, res) => {
+  console.log("📥 DELETE /tasks:", {
+    id: req.params.id,
+    query: req.query,
+  });
+
   const { id } = req.params;
   const { userId } = req.query;
 
   if (!userId) {
+    console.log("❌ userId faltante en DELETE");
     return res.status(400).json({ error: "userId requerido" });
   }
 
@@ -145,17 +163,22 @@ app.delete("/api/tasks/:id", async (req, res) => {
       where: { id: Number(id) },
     });
 
+    console.log("🔍 TASK FOUND:", task);
+
     if (!task) {
       return res.status(404).json({ error: "Tarea no existe" });
     }
 
     if (task.ownerId !== userId && user?.role !== "admin") {
+      console.log("❌ No permitido");
       return res.status(403).json({ error: "No permitido" });
     }
 
     await prisma.task.delete({
       where: { id: Number(id) },
     });
+
+    console.log("🗑️ TASK DELETED:", id);
 
     res.json({ ok: true });
   } catch (error) {
@@ -168,6 +191,8 @@ app.delete("/api/tasks/:id", async (req, res) => {
    SHARE TASK
 ========================= */
 app.post("/api/tasks/share", async (req, res) => {
+  console.log("📥 SHARE BODY:", req.body);
+
   const { taskId, email } = req.body;
 
   if (!taskId || !email) {
@@ -192,6 +217,8 @@ app.post("/api/tasks/share", async (req, res) => {
       },
     });
 
+    console.log("📤 SHARED TASK:", task);
+
     res.json(task);
   } catch (error) {
     console.error("💥 SHARE ERROR:", error);
@@ -202,6 +229,7 @@ app.post("/api/tasks/share", async (req, res) => {
 /* =========================
    SERVER
 ========================= */
-app.listen(8080, () => {
-  console.log("🚀 Server running on port 8080");
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+  console.log(`🚀 Server running on port ${port}`);
 });
